@@ -1,0 +1,12 @@
+server:
+  port: 8900
+
+meli:
+  api:
+    url: "https://api.mercadolibre.com"
+
+redis:
+  host: 127.0.01
+  port: 6379
+  user:
+  password:
