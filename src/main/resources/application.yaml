@@ -15,4 +15,11 @@ rate:
   key-requests-today: "requests-count"
   limit: 100
   path-limit: 20
-  authorized-limit: 1000
+  auth:
+    limit: 200
+    path-limit: 40
+
+security:
+  app-key: very-hard-app-key
+  app-id: very-hard-app-id
+  token: jwt-token-validation

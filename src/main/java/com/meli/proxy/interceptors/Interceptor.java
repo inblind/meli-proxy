@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.meli.proxy.model.Statistics;
 import com.meli.proxy.repository.RedisRepository;
+import com.meli.proxy.security.Security;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +35,22 @@ public class Interceptor implements HandlerInterceptor {
     @Value("${rate.path-limit}")
     private int pathLimit;
 
+    @Value("${rate.auth.limit}")
+    private int authRateLimit;
+
+    @Value("${rate.auth.path-limit}")
+    private int authPathLimit;
+
     @Value("${rate.key-requests-today}")
     private String keyRequestsToday;
 
-    public Interceptor(){
+    private Security security;
+
+    @Autowired
+    public Interceptor(Security security){
             this.mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
+            this.security = security;
     }
 
     @Override
@@ -50,7 +61,9 @@ public class Interceptor implements HandlerInterceptor {
 
         int requests = getRequests(dataSet);
         int pathRequests = getPathRequests(request.getRequestURI(), dataSet);
-        if(requests > rateLimit || pathRequests > pathLimit){
+        boolean isAuth = security.isAuthenticated(request);
+        if((!isAuth && (requests > rateLimit || pathRequests > pathLimit)) ||
+                (isAuth && (requests > authRateLimit || pathRequests > authPathLimit))){
             handleError(response);
             return false;
         }
