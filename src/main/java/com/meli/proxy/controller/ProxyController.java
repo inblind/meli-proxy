@@ -9,19 +9,48 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @RestController
-@RequestMapping("/proxy")
+@RequestMapping("/")
 public class ProxyController {
 
     @Autowired
     MeliService server;
 
-    @GetMapping("/{resource}/{id}")
-    private ApiResponse getEmployeeById(@PathVariable String resource, @PathVariable String id) throws ExecutionException, InterruptedException, JsonProcessingException {
-        return server.getApiInformation(resource, id, null);
+    @GetMapping("/{first}")
+    private ApiResponse getResource(@PathVariable String first) throws ExecutionException, InterruptedException, JsonProcessingException {
+        return server.getApiInformation(new ArrayList<>() {
+            {add(first); }
+        });
     }
 
+    @GetMapping("/{first}/{second}")
+    private ApiResponse getResourceSecond(@PathVariable String first, @PathVariable String second) throws ExecutionException, InterruptedException, JsonProcessingException {
+        List<String> paths = new ArrayList<>();
+        paths.add(first);
+        paths.add(second);
+        return server.getApiInformation(paths);
+    }
 
+    @GetMapping("/{first}/{second}/{third}")
+    private ApiResponse getResourceThird(@PathVariable String first, @PathVariable String second, @PathVariable String third) throws ExecutionException, InterruptedException, JsonProcessingException {
+        List<String> paths = new ArrayList<>();
+        paths.add(first);
+        paths.add(second);
+        paths.add(third);
+        return server.getApiInformation(paths);
+    }
+
+    @GetMapping("/{first}/{second}/{third}/{fourth}")
+    private ApiResponse getResourceThird(@PathVariable String first, @PathVariable String second, @PathVariable String third, @PathVariable String fourth) throws ExecutionException, InterruptedException, JsonProcessingException {
+        List<String> paths = new ArrayList<>();
+        paths.add(first);
+        paths.add(second);
+        paths.add(third);
+        paths.add(fourth);
+        return server.getApiInformation(paths);
+    }
 }
