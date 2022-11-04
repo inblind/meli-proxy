@@ -1,11 +1,8 @@
 package com.meli.proxy.redis;
 
-//import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import redis.clients.jedis.JedisPool;
 
 @Component

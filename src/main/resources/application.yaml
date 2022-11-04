@@ -12,5 +12,7 @@ redis:
   password:
 
 rate:
-  free-limit: 10
-  authorized-limit: 30
+  key-requests-today: "requests-count"
+  limit: 100
+  path-limit: 20
+  authorized-limit: 1000
