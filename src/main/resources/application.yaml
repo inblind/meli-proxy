@@ -13,11 +13,11 @@ redis:
 
 rate:
   key-requests-today: "requests-count"
-  limit: 100
-  path-limit: 20
+  limit: 1000000000
+  path-limit: 1000000000
   auth:
-    limit: 200
-    path-limit: 40
+    limit: 1000000000
+    path-limit: 1000000000
 
 security:
   app-key: very-hard-app-key

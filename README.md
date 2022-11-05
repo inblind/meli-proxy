@@ -11,7 +11,7 @@ Meli Proxy para api.mercadolibre.com
 
 
 ## Diagrama de flujo
-![Alt text](Meli.drawio.png?raw=true "Title")
+![Alt text](Meli.drawio.png?raw=true "Diagrama de flujo")
 
 ## Escalabilidad
 ### Scale up
@@ -27,7 +27,12 @@ En general se trabaja con scaleout automatizado, lo que permite no tener que int
 previas, que permite realizar un scaleout o scalein dependiendo de los periodos de prueba.
 
 ## Load test
-Se realiza una prueba de carga con jmeter para un endpoint get en especifico y este soporta....
+Se realiza una prueba de carga con jmeter para un endpoint get en especifico y este soporta 10.000 peticiones por segundo sin problema.
+![Alt text](req-10000.png?raw=true "Carga 10.000")
+
+### A las 13.000 peticiones comienza a presentar errores.
+![Alt text](req-13000.png?raw=true "Carga 13.000")
+
 
 ## Rate limit
 Se define un rate limit por ip (ej 100 peticiones) y por la tupla ip + path (ej: 127.0.0.1 /categories/MLA5725)
