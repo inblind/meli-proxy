@@ -19,12 +19,24 @@ Scaleup: Cuando la CPU supere el 80%
 Scaledown: Cuando baje el tráfico
 
 ### Scale out
-Escalar hacía arriba no siempre da abaste, por lo cual se piensa en reautilizar la regionalización de ML.
+Escalar hacía arriba no siempre da abasto, por lo cual se piensa en reautilizar la regionalización de ML.
 Con esto se podra realizar un scaleout, agregando mas pods/nodos de nuestro proyecto a la región especifica
 pudiendo maantener una carga activa para momentos criticos (Navidad, Comerciales Televisivos, etc)
 
-En general se trabaja con scaleout automatizado, lo que permite no tener que intervenir manualmente el proyecto, con configuraciones
-previas, que permite realizar un scaleout o scalein dependiendo de los periodos de prueba.
+En general se trabaja con scaleout automatizado, lo que permite no tener que intervenir manualmente el proyecto, con configuraciones previas, que permite realizar un scaleout o scalein dependiendo de los periodos de prueba.
+
+Para esto se deberá agregar un balanceador que carga que sea capaz de descrubrir (api discovery) y balancear la carga
+entre los nodos que vayan creandose.
+
+Por otro lado redis debería escalarse mediante un redis cluster, que nos permite tener la data replicada
+en multiples instancias. Sin mayor impacto en como se lee de redis.
+
+Esto sumado a que el próxy + redis se escalará, permitirá ,teóricamente, no escalar de forma tan abrupta la api de mercadlibre.
+
+
+Podemos ver el siguiente diagrama de la idea. 
+
+![Alt text](scaling-out.png?raw=true "Scaling out")
 
 ## Load test
 Se realiza una prueba de carga con jmeter para un endpoint get en especifico y este soporta 10.000 peticiones por segundo sin problema.
