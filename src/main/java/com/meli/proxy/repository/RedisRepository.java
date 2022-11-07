@@ -1,6 +1,5 @@
 package com.meli.proxy.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meli.proxy.redis.RedisConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -28,5 +27,4 @@ public class RedisRepository {
             return (HashMap<String, String>) jedis.hgetAll(key);
         }
     }
-
 }

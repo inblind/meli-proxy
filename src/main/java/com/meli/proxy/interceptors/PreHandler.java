@@ -4,9 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.meli.proxy.model.Statistics;
+import com.meli.proxy.model.Tracking;
 import com.meli.proxy.repository.RedisRepository;
 import com.meli.proxy.security.Security;
+import com.meli.proxy.service.StatisticsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,10 +25,8 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class Interceptor implements HandlerInterceptor {
+public class PreHandler implements HandlerInterceptor {
 
-    @Autowired
-    RedisRepository repo;
     private ObjectMapper mapper;
     @Value("${rate.limit}")
     private int rateLimit;
@@ -45,18 +44,27 @@ public class Interceptor implements HandlerInterceptor {
     private String keyRequestsToday;
 
     private Security security;
+    private String TRACKING_KEY_STRING = "tacking_%s";
+
+    final
+    RedisRepository repo;
+
+    final
+    StatisticsService statService;
 
     @Autowired
-    public Interceptor(Security security){
+    public PreHandler(Security security, RedisRepository repo, StatisticsService statService){
             this.mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             this.security = security;
+            this.repo = repo;
+            this.statService = statService;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        String key =  String.format("statistics_%s", request.getRemoteAddr().replace(":", "-"));
+        String key =  String.format(TRACKING_KEY_STRING, request.getRemoteAddr().replace(":", "-"));
         HashMap<String, String> dataSet = repo.get(key);
 
         int requests = getRequests(dataSet);
@@ -64,34 +72,34 @@ public class Interceptor implements HandlerInterceptor {
         boolean isAuth = security.isAuthenticated(request);
         if((!isAuth && (requests > rateLimit || pathRequests > pathLimit)) ||
                 (isAuth && (requests > authRateLimit || pathRequests > authPathLimit))){
-            handleError(response);
+            handleError(request, response);
             return false;
         }
 
-        repo.save(key, createStatisticMap(request, dataSet, requests));
+        repo.save(key, createTrackingMap(request, dataSet, requests));
         return true;
     }
 
     private int getPathRequests(String path, HashMap<String, String> dataSet) throws JsonProcessingException {
         if(dataSet.get(path) != null){
-            List<Statistics> list = mapper.readValue(dataSet.get(path), new TypeReference<ArrayList<Statistics>>(){});
+            List<Tracking> list = mapper.readValue(dataSet.get(path), new TypeReference<ArrayList<Tracking>>(){});
             return list.size();
         }
 
         return 0;
     }
 
-    private HashMap<String, String> createStatisticMap(HttpServletRequest request, HashMap<String, String> dataSet, int requests) throws JsonProcessingException {
-        List<Statistics> list = new ArrayList<>();
+    private HashMap<String, String> createTrackingMap(HttpServletRequest request, HashMap<String, String> dataSet, int requests) throws JsonProcessingException {
+        List<Tracking> list = new ArrayList<>();
 
-        Statistics statics = Statistics.builder()
+        Tracking statics = Tracking.builder()
                 .ip(request.getRemoteAddr())
                 .path(request.getRequestURI())
                 .dateTime(LocalDateTime.now())
                 .build();
         HashMap<String, String> map = new HashMap<>();
         if(dataSet.get(request.getRequestURI()) != null){
-            list = mapper.readValue(dataSet.get(request.getRequestURI()), new TypeReference<ArrayList<Statistics>>(){});
+            list = mapper.readValue(dataSet.get(request.getRequestURI()), new TypeReference<ArrayList<Tracking>>(){});
         }
         list.add(statics);
         map.put(request.getRequestURI(), mapper.writeValueAsString(list));
@@ -99,10 +107,11 @@ public class Interceptor implements HandlerInterceptor {
         return map;
     }
 
-    private void handleError(HttpServletResponse response) throws IOException {
+    private void handleError(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.getWriter().write("{error: 'limit maxed out'");
         response.setContentType("application/json");
         response.sendError(HttpStatus.UNAUTHORIZED.value(), "Rate limit maxed out");
+        statService.saveStatistics(request, 0, false, "Rate limit maxed out");
     }
 
     private int getRequests(HashMap<String, String> dataSet){

@@ -66,8 +66,6 @@ Debemos evaluar cuando vamos a realizar caché.
 * Hay peticiones que no queremos agregar al cache ya que son distintas cada vez
 
 
-
-
 ## Java version
 This was used using sdk man https://sdkman.io/install
 ``
@@ -81,4 +79,14 @@ sdk install java 19-amzn
 brew install redis 
 redis-server
 ./gradlew bootRun
+``
+
+``
+curl --location --request GET 'http://localhost:8900/sites/MLA/categories'
+``
+
+``
+curl --location --request GET 'http://localhost:8900/statistics' \
+--header 'app-key: very-hard-app-key' \
+--header 'app-id: very-hard-app-id'
 ``
